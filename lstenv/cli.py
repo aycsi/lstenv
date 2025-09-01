@@ -93,6 +93,11 @@ Examples:
         default='.env.example',
         help='Name of example file to audit (default: .env.example)'
     )
+    audit_parser.add_argument(
+        '--verbose', '-v',
+        action='store_true',
+        help='Show detailed scanning information'
+    )
     
     args = parser.parse_args()
     
