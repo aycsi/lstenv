@@ -118,8 +118,8 @@ def write_env_file(file_path: Path, env_vars: Dict[str, str], preserve_comments:
         raise IOError(f"Cannot write to file: {file_path}")
 
 
-def generate_example_env(directory: Path = None) -> Dict[str, str]:
-    env_vars = scan_python_files(directory)
+def generate_example_env(directory: Path = None, verbose: bool = False) -> Dict[str, str]:
+    env_vars = scan_python_files(directory, verbose=verbose)
     example_vars = {}
     
     for var in sorted(env_vars):
@@ -128,12 +128,12 @@ def generate_example_env(directory: Path = None) -> Dict[str, str]:
     return example_vars
 
 
-def sync_env_files(directory: Path = None, clean: bool = False) -> Dict[str, str]:
+def sync_env_files(directory: Path = None, clean: bool = False, example_file: str = ".env.example") -> Dict[str, str]:
     if directory is None:
         directory = Path.cwd()
     
     env_path = directory / ".env"
-    example_path = directory / ".env.example"
+    example_path = directory / example_file
     
     example_vars = parse_env_file(example_path)
     env_vars = parse_env_file(env_path)
@@ -148,12 +148,12 @@ def sync_env_files(directory: Path = None, clean: bool = False) -> Dict[str, str
     return env_vars
 
 
-def audit_env_files(directory: Path = None) -> Tuple[Set[str], Set[str], Set[str]]:
+def audit_env_files(directory: Path = None, example_file: str = ".env.example") -> Tuple[Set[str], Set[str], Set[str]]:
     if directory is None:
         directory = Path.cwd()
     
     env_path = directory / ".env"
-    example_path = directory / ".env.example"
+    example_path = directory / example_file
     
     env_vars = set(parse_env_file(env_path).keys())
     example_vars = set(parse_env_file(example_path).keys())
@@ -170,7 +170,7 @@ def get_colored_output(text: str, color_code: str) -> str:
     return f"\033[{color_code}m{text}\033[0m"
 
 
-def print_audit_report(present: Set[str], missing: Set[str], unused: Set[str]):
+def print_audit_report(present: Set[str], missing: Set[str], unused: Set[str], example_file: str = ".env.example"):
     print("Environment Variables Audit Report")
     print("=" * 50)
     
