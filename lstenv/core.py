@@ -167,7 +167,7 @@ def sync_env_files(directory: Path = None, clean: bool = False, example_file: st
     return env_vars
 
 
-def audit_env_files(directory: Path = None, example_file: str = ".env.example") -> Tuple[Set[str], Set[str], Set[str]]:
+def audit_env_files(directory: Path = None, example_file: str = ".env.example", verbose: bool = False) -> Tuple[Set[str], Set[str], Set[str]]:
     if directory is None:
         directory = Path.cwd()
     
