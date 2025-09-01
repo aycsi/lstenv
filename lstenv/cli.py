@@ -131,7 +131,10 @@ Examples:
 def handle_generate(directory: Path, example_file: str, verbose: bool = False) -> int:
     print(f"Scanning Python files in {directory}...")
     
-    env_vars = generate_example_env(directory)
+    if verbose:
+        print(f"Verbose mode: Will show detailed file-by-file scanning information")
+    
+    env_vars = generate_example_env(directory, verbose=verbose)
     
     if not env_vars:
         print(f"{get_colored_output('No environment variables found', '36')}")
