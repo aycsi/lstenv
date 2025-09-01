@@ -107,11 +107,11 @@ Examples:
     
     try:
         if args.command == 'generate':
-            return handle_generate(args.directory, args.example_file)
+            return handle_generate(args.directory, args.example_file, args.verbose)
         elif args.command == 'sync':
-            return handle_sync(args.directory, args.clean, args.example_file)
+            return handle_sync(args.directory, args.clean, args.example_file, args.verbose)
         elif args.command == 'audit':
-            return handle_audit(args.directory, args.example_file)
+            return handle_audit(args.directory, args.example_file, args.verbose)
     except KeyboardInterrupt:
         print("\nOperation cancelled by user")
         return 1
