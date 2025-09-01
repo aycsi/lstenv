@@ -147,7 +147,7 @@ def generate_example_env(directory: Path = None, verbose: bool = False) -> Dict[
     return example_vars
 
 
-def sync_env_files(directory: Path = None, clean: bool = False, example_file: str = ".env.example") -> Dict[str, str]:
+def sync_env_files(directory: Path = None, clean: bool = False, example_file: str = ".env.example", verbose: bool = False) -> Dict[str, str]:
     if directory is None:
         directory = Path.cwd()
     
