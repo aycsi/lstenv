@@ -189,11 +189,17 @@ def get_colored_output(text: str, color_code: str) -> str:
     return f"\033[{color_code}m{text}\033[0m"
 
 
-def print_audit_report(present: Set[str], missing: Set[str], unused: Set[str], example_file: str = ".env.example"):
+def print_audit_report(present: Set[str], missing: Set[str], unused: Set[str], example_file: str = ".env.example", verbose: bool = False):
     print("Environment Variables Audit Report")
     print("=" * 50)
     
     total_vars = len(present) + len(missing) + len(unused)
+    
+    if verbose:
+        print(f"\nTotal variables found: {total_vars}")
+        print(f"Variables in .env: {len(present)}")
+        print(f"Variables in {example_file}: {len(present) + len(missing)}")
+        print(f"Variables in code: {len(present) + len(missing) + len(unused)}")
     
     if present:
         print(f"\n{get_colored_output('Present', '32')} ({len(present)}):")
