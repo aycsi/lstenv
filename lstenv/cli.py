@@ -187,7 +187,7 @@ def handle_sync(directory: Path, clean: bool, example_file: str, verbose: bool =
     return 0
 
 
-def handle_audit(directory: Path, example_file: str) -> int:
+def handle_audit(directory: Path, example_file: str, verbose: bool = False) -> int:
     env_path = directory / ".env"
     example_path = directory / example_file
     
