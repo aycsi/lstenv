@@ -177,7 +177,7 @@ def handle_sync(directory: Path, clean: bool, example_file: str, verbose: bool =
     
     print(f"Syncing .env with {example_file}...")
     
-    env_vars = sync_env_files(directory, clean, example_file)
+    env_vars = sync_env_files(directory, clean, example_file, verbose=verbose)
     write_env_file(env_path, env_vars)
     
     action = "Cleaned" if clean else "Synced"
@@ -199,8 +199,8 @@ def handle_audit(directory: Path, example_file: str, verbose: bool = False) -> i
         return 0
     
     print(f"Auditing environment files in {directory}...")
-    present, missing, unused = audit_env_files(directory, example_file)
-    print_audit_report(present, missing, unused, example_file)
+    present, missing, unused = audit_env_files(directory, example_file, verbose=verbose)
+    print_audit_report(present, missing, unused, example_file, verbose=verbose)
     
     return 0
 
