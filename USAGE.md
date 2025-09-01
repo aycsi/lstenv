@@ -1,6 +1,6 @@
-# how and why i use lstenv
+# how i use lstenv
 
-## why i built this? 
+## why i built this?
 
 I got tired of manually managing environment variables across my projects. Every time I'd start a new project or work on existing code, I'd run into the same issues:
 

@@ -10,6 +10,10 @@ Tool for generating, syncing, and auditing .env files by scanning code.
 pip install lstenv
 ```
 
+## Documentation
+
+[![Documentation](https://img.shields.io/badge/docs-USAGE.md-blue)](https://github.com/aycsi/lstenv/blob/main/USAGE.md)
+
 ## License
 
 MIT License
