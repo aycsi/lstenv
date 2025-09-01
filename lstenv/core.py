@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
 
-def scan_python_files(directory: Path = None) -> Set[str]:
+def scan_python_files(directory: Path = None, verbose: bool = False) -> Set[str]:
     if directory is None:
         directory = Path.cwd()
     elif isinstance(directory, str):
@@ -15,6 +15,10 @@ def scan_python_files(directory: Path = None) -> Set[str]:
     
     env_vars = set()
     python_files = list(directory.rglob("*.py"))
+    
+    if verbose:
+        print(f"Found {len(python_files)} Python files to scan")
+        print(f"Excluded directories: .venv/, __pycache__/, .git/, node_modules/")
     
     python_files = [
         f for f in python_files 
