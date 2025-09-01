@@ -164,7 +164,7 @@ def handle_generate(directory: Path, example_file: str, verbose: bool = False) -
     return 0
 
 
-def handle_sync(directory: Path, clean: bool, example_file: str) -> int:
+def handle_sync(directory: Path, clean: bool, example_file: str, verbose: bool = False) -> int:
     env_path = directory / ".env"
     example_path = directory / example_file
     
