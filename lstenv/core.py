@@ -44,8 +44,11 @@ def scan_python_files(directory: Path = None, verbose: bool = False) -> Set[str]
             content = file_path.read_text(encoding='utf-8')
             
             if any(skip_pattern in content.lower() for skip_pattern in ['mock', 'test_', 'pytest']):
+                if verbose:
+                    print(f"  Skipped: {file_path.name} (test file)")
                 continue
                 
+            file_vars = set()
             for pattern in patterns:
                 matches = re.findall(pattern, content)
                 filtered_matches = [
@@ -54,9 +57,21 @@ def scan_python_files(directory: Path = None, verbose: bool = False) -> Set[str]
                     and not match.isdigit()
                     and not match.startswith('_')
                 ]
-                env_vars.update(filtered_matches)
+                file_vars.update(filtered_matches)
+            
+            if verbose:
+                if file_vars:
+                    print(f"  Scanning: {file_path.name}")
+                    print(f"    Found: {', '.join(sorted(file_vars))}")
+                else:
+                    print(f"  Scanning: {file_path.name}")
+                    print(f"    No environment variables found")
+            
+            env_vars.update(file_vars)
                 
         except (UnicodeDecodeError, IOError, PermissionError):
+            if verbose:
+                print(f"  Skipped: {file_path.name} (permission/encoding error)")
             continue
     
     return env_vars
