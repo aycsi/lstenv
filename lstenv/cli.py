@@ -128,7 +128,7 @@ Examples:
     return 0
 
 
-def handle_generate(directory: Path, example_file: str) -> int:
+def handle_generate(directory: Path, example_file: str, verbose: bool = False) -> int:
     print(f"Scanning Python files in {directory}...")
     
     env_vars = generate_example_env(directory)
