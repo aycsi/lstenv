@@ -2,7 +2,7 @@
 
 Tool for generating, syncing, and auditing .env files by scanning code.
 
-[![PyPI version](https://badge.fury.io/py/lstenv.svg)](https://badge.fury.io/py/lstenv)
+[![PyPI](https://img.shields.io/pypi/v/lst)](https://pypi.org/project/lstenvs)
 
 ## Installation
 
