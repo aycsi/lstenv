@@ -3,8 +3,97 @@ import re
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+LANGUAGE_PATTERNS = {
+    'python': [
+        r'os\.getenv\(["\']([^"\']+)["\']',
+        r'os\.environ\[["\']([^"\']+)["\']\]',
+        r'os\.environ\.get\(["\']([^"\']+)["\']',
+        r'os\.environ\.get\(["\']([^"\']+)["\'],\s*[^)]+\)',
+        r'getenv\(["\']([^"\']+)["\']',
+        r'environ\[["\']([^"\']+)["\']\]',
+    ],
+    'javascript': [
+        r'process\.env\.([A-Z_][A-Z0-9_]*)',
+        r'process\.env\[["\']([^"\']+)["\']\]',
+        r'process\.env\[`([^`]+)`\]',
+    ],
+    'typescript': [
+        r'process\.env\.([A-Z_][A-Z0-9_]*)',
+        r'process\.env\[["\']([^"\']+)["\']\]',
+        r'process\.env\[`([^`]+)`\]',
+    ],
+    'go': [
+        r'os\.Getenv\(["\']([^"\']+)["\']',
+        r'os\.LookupEnv\(["\']([^"\']+)["\']',
+    ],
+    'rust': [
+        r'env::var\(["\']([^"\']+)["\']',
+        r'env::var_os\(["\']([^"\']+)["\']',
+        r'std::env::var\(["\']([^"\']+)["\']',
+        r'std::env::var_os\(["\']([^"\']+)["\']',
+    ],
+    'java': [
+        r'System\.getenv\(["\']([^"\']+)["\']',
+        r'System\.getProperty\(["\']([^"\']+)["\']',
+    ],
+    'csharp': [
+        r'Environment\.GetEnvironmentVariable\(["\']([^"\']+)["\']',
+        r'Environment\.GetEnvironmentVariable\(["\']([^"\']+)["\'],\s*[^)]+\)',
+    ],
+    'php': [
+        r'\$_ENV\[["\']([^"\']+)["\']\]',
+        r'getenv\(["\']([^"\']+)["\']',
+        r'\$_SERVER\[["\']([^"\']+)["\']\]',
+    ],
+    'ruby': [
+        r'ENV\[["\']([^"\']+)["\']\]',
+        r'ENV\.fetch\(["\']([^"\']+)["\']',
+        r'ENV\.fetch\(["\']([^"\']+)["\'],\s*[^)]+\)',
+    ],
+}
 
-def scan_python_files(directory: Path = None, verbose: bool = False) -> Set[str]:
+LANGUAGE_EXTENSIONS = {
+    'python': ['.py'],
+    'javascript': ['.js'],
+    'typescript': ['.ts', '.tsx'],
+    'go': ['.go'],
+    'rust': ['.rs'],
+    'java': ['.java'],
+    'csharp': ['.cs'],
+    'php': ['.php'],
+    'ruby': ['.rb'],
+}
+
+
+def detect_language(file_path: Path) -> str:
+    suffix = file_path.suffix.lower()
+    for language, extensions in LANGUAGE_EXTENSIONS.items():
+        if suffix in extensions:
+            return language
+    return 'unknown'
+
+def should_skip_file(file_path: Path) -> bool:
+    path_str = str(file_path)
+    skip_patterns = [
+        'lstenv/core.py',
+        'lstenv/cli.py', 
+        'lstenv/__init__.py',
+        '.venv',
+        'venv',
+        '__pycache__',
+        '.git',
+        'node_modules',
+        '.next',
+        'target',
+        'build',
+        'dist',
+        '.gradle',
+        'bin',
+        'obj'
+    ]
+    return any(pattern in path_str for pattern in skip_patterns)
+
+def scan_code_files(directory: Path = None, verbose: bool = False) -> Set[str]:
     if directory is None:
         directory = Path.cwd()
     elif isinstance(directory, str):
@@ -14,65 +103,70 @@ def scan_python_files(directory: Path = None, verbose: bool = False) -> Set[str]
         raise ValueError(f"Directory does not exist: {directory}")
     
     env_vars = set()
-    python_files = list(directory.rglob("*.py"))
+    all_files = []
+    
+    for language, extensions in LANGUAGE_EXTENSIONS.items():
+        for ext in extensions:
+            all_files.extend(directory.rglob(f"*{ext}"))
     
     if verbose:
-        print(f"Found {len(python_files)} Python files to scan")
-        print(f"Excluded directories: .venv/, __pycache__/, .git/, node_modules/")
+        print(f"Found {len(all_files)} code files to scan")
+        print(f"Excluded directories: .venv/, __pycache__/, .git/, node_modules/, build/, dist/, etc.")
     
-    python_files = [
-        f for f in python_files 
-        if "lstenv" not in str(f) 
-        and ".venv" not in str(f)
-        and "venv" not in str(f)
-        and "__pycache__" not in str(f)
-        and ".git" not in str(f)
-        and "node_modules" not in str(f)
-    ]
-    
-    patterns = [
-        r'os\.getenv\(["\']([^"\']+)["\']',
-        r'os\.environ\[["\']([^"\']+)["\']\]',
-        r'os\.environ\.get\(["\']([^"\']+)["\']',
-        r'os\.environ\.get\(["\']([^"\']+)["\'],\s*[^)]+\)',
-        r'getenv\(["\']([^"\']+)["\']',
-        r'environ\[["\']([^"\']+)["\']\]',
-    ]
-    
-    for file_path in python_files:
-        try:
-            content = file_path.read_text(encoding='utf-8')
-            
-            if any(skip_pattern in content.lower() for skip_pattern in ['mock', 'test_', 'pytest']):
-                if verbose:
-                    print(f"  Skipped: {file_path.name} (test file)")
-                continue
-                
-            file_vars = set()
-            for pattern in patterns:
-                matches = re.findall(pattern, content)
-                filtered_matches = [
-                    match for match in matches 
-                    if len(match) > 1
-                    and not match.isdigit()
-                    and not match.startswith('_')
-                ]
-                file_vars.update(filtered_matches)
-            
-            if verbose:
-                if file_vars:
-                    print(f"  Scanning: {file_path.name}")
-                    print(f"    Found: {', '.join(sorted(file_vars))}")
-                else:
-                    print(f"  Scanning: {file_path.name}")
-                    print(f"    No environment variables found")
-            
-            env_vars.update(file_vars)
-                
-        except (UnicodeDecodeError, IOError, PermissionError):
-            if verbose:
-                print(f"  Skipped: {file_path.name} (permission/encoding error)")
+    files_by_language = {}
+    for file_path in all_files:
+        if should_skip_file(file_path):
             continue
+            
+        language = detect_language(file_path)
+        if language not in files_by_language:
+            files_by_language[language] = []
+        files_by_language[language].append(file_path)
+    
+    if verbose:
+        for lang, files in files_by_language.items():
+            print(f"  {lang}: {len(files)} files")
+    
+    for language, files in files_by_language.items():
+        if language not in LANGUAGE_PATTERNS:
+            continue
+            
+        patterns = LANGUAGE_PATTERNS[language]
+        
+        for file_path in files:
+            try:
+                content = file_path.read_text(encoding='utf-8')
+                
+                if any(skip_pattern in content.lower() for skip_pattern in ['mock', 'test_', 'pytest', 'spec', 'test']):
+                    if verbose:
+                        print(f"  Skipped: {file_path.name} (test file)")
+                    continue
+                    
+                file_vars = set()
+                for pattern in patterns:
+                    matches = re.findall(pattern, content)
+                    filtered_matches = [
+                        match for match in matches 
+                        if len(match) > 1
+                        and not match.isdigit()
+                        and not match.startswith('_')
+                    ]
+                    file_vars.update(filtered_matches)
+                
+                if verbose:
+                    if file_vars:
+                        print(f"  Scanning: {file_path.name} ({language})")
+                        print(f"    Found: {', '.join(sorted(file_vars))}")
+                    else:
+                        print(f"  Scanning: {file_path.name} ({language})")
+                        print(f"    No environment variables found")
+                
+                env_vars.update(file_vars)
+                    
+            except (UnicodeDecodeError, IOError, PermissionError):
+                if verbose:
+                    print(f"  Skipped: {file_path.name} (permission/encoding error)")
+                continue
     
     return env_vars
 
@@ -138,7 +232,7 @@ def write_env_file(file_path: Path, env_vars: Dict[str, str], preserve_comments:
 
 
 def generate_example_env(directory: Path = None, verbose: bool = False) -> Dict[str, str]:
-    env_vars = scan_python_files(directory, verbose=verbose)
+    env_vars = scan_code_files(directory, verbose=verbose)
     example_vars = {}
     
     for var in sorted(env_vars):
@@ -176,7 +270,7 @@ def audit_env_files(directory: Path = None, example_file: str = ".env.example", 
     
     env_vars = set(parse_env_file(env_path).keys())
     example_vars = set(parse_env_file(example_path).keys())
-    code_vars = scan_python_files(directory)
+    code_vars = scan_code_files(directory)
     
     present = env_vars & example_vars
     missing = example_vars - env_vars

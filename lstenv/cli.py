@@ -14,7 +14,7 @@ from .core import (
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate, sync, and audit .env files by scanning Python code",
+        description="Generate, sync, and audit .env files by scanning code",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -30,7 +30,7 @@ Examples:
     
     generate_parser = subparsers.add_parser(
         'generate',
-        help='Generate .env.example from Python files'
+        help='Generate .env.example from code files'
     )
     generate_parser.add_argument(
         '--directory', '-d',
@@ -129,7 +129,7 @@ Examples:
 
 
 def handle_generate(directory: Path, example_file: str, verbose: bool = False) -> int:
-    print(f"Scanning Python files in {directory}...")
+    print(f"Scanning code files in {directory}...")
     
     if verbose:
         print(f"Verbose mode: Will show detailed file-by-file scanning information")
