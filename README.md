@@ -20,6 +20,3 @@ pip install lstenv
 
 MIT License
 
-## Repository
-
-[https://github.com/aycsi/lstenv](https://github.com/aycsi/lstenv)
