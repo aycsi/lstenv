@@ -385,6 +385,12 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
     
     try:
         subprocess.run(['vim', temp_path], check=True)
+    except FileNotFoundError:
+        print("Error: vim is not installed. plz install vim (please!).")
+        print("On Windows: Download from https://www.vim.org/download.php")
+        print("On macOS: brew install vim")
+        print("On Linux: sudo apt install vim (Ubuntu/Debian) or sudo yum install vim (CentOS/RHEL)")
+        raise
         
         with open(temp_path, 'r') as f:
             edited_content = f.read()
