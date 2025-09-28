@@ -100,7 +100,7 @@ Examples:
     )
     
     ea_parser = subparsers.add_parser(
-        'ea',
+        'e',
         help='Edit all environment variables in all .env files using vim'
     )
     ea_parser.add_argument(
@@ -128,7 +128,7 @@ Examples:
             return handle_sync(args.directory, args.clean, args.example_file, args.verbose)
         elif args.command == 'audit':
             return handle_audit(args.directory, args.example_file, args.verbose)
-        elif args.command == 'ea':
+        elif args.command == 'e':
             return handle_ea(args.directory, args.verbose)
     except KeyboardInterrupt:
         print("\nOperation cancelled by user")
