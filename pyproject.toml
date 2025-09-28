@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lstenv"
-version = "0.0.8"
-description = "A tool on your command line for generating, syncing, and auditing .env files via scan"
+version = "0.0.9"
+description = "A tool on your command line for editing environment variables"
 readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "MIT"}
