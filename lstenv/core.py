@@ -342,10 +342,19 @@ def scan_all_env_files(directory: Path = None, verbose: bool = False) -> List[Pa
         raise ValueError(f"Directory does not exist: {directory}")
     
     env_files = []
-    for pattern in ['.env*', '*.env']:
-        env_files.extend(directory.rglob(pattern))
     
-    env_files = [f for f in env_files if f.is_file() and not should_skip_file(f)]
+    for root, dirs, files in os.walk(directory):
+        root_path = Path(root)
+        
+        if should_skip_file(root_path):
+            dirs.clear()
+            continue
+        
+        for file in files:
+            if file.startswith('.env') or file.endswith('.env'):
+                file_path = root_path / file
+                if file_path.is_file():
+                    env_files.append(file_path)
     
     if verbose:
         print(f"Found {len(env_files)} .env files")
