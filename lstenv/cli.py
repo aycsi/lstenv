@@ -128,6 +128,8 @@ Examples:
             return handle_sync(args.directory, args.clean, args.example_file, args.verbose)
         elif args.command == 'audit':
             return handle_audit(args.directory, args.example_file, args.verbose)
+        elif args.command == 'ea':
+            return handle_ea(args.directory, args.verbose)
     except KeyboardInterrupt:
         print("\nOperation cancelled by user")
         return 1
@@ -217,6 +219,31 @@ def handle_audit(directory: Path, example_file: str, verbose: bool = False) -> i
     print(f"Auditing environment files in {directory}...")
     present, missing, unused = audit_env_files(directory, example_file, verbose=verbose)
     print_audit_report(present, missing, unused, example_file, verbose=verbose)
+    
+    return 0
+
+
+def handle_ea(directory: Path, verbose: bool = False) -> int:
+    from .core import scan_all_env_files, edit_env_variables_with_vim
+    
+    print(f"Scanning all .env files in {directory}...")
+    
+    env_files = scan_all_env_files(directory, verbose=verbose)
+    
+    if not env_files:
+        print(f"{get_colored_output('No .env files found', '36')}")
+        return 0
+    
+    print(f"Found {len(env_files)} .env files:")
+    for file_path in env_files:
+        print(f"  {file_path}")
+    
+    try:
+        edit_env_variables_with_vim(env_files, verbose=verbose)
+        print(f"{get_colored_output('Editing completed', '32')}")
+    except Exception as e:
+        print(f"{get_colored_output('Error:', '31')} {e}")
+        return 1
     
     return 0
 
