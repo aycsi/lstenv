@@ -342,19 +342,10 @@ def scan_all_env_files(directory: Path = None, verbose: bool = False) -> List[Pa
         raise ValueError(f"Directory does not exist: {directory}")
     
     env_files = []
+    for pattern in ['.env*', '*.env']:
+        env_files.extend(directory.rglob(pattern))
     
-    for root, dirs, files in os.walk(directory):
-        root_path = Path(root)
-        
-        if should_skip_file(root_path):
-            dirs.clear()
-            continue
-        
-        for file in files:
-            if file.startswith('.env') or file.endswith('.env'):
-                file_path = root_path / file
-                if file_path.is_file():
-                    env_files.append(file_path)
+    env_files = [f for f in env_files if f.is_file() and not should_skip_file(f)]
     
     if verbose:
         print(f"Found {len(env_files)} .env files")
@@ -406,12 +397,6 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
     
     try:
         subprocess.run(['vim', temp_path], check=True)
-    except FileNotFoundError:
-        print("Error: vim is not installed. plz install vim (please!).")
-        print("On Windows: Download from https://www.vim.org/download.php")
-        print("On macOS: brew install vim")
-        print("On Linux: sudo apt install vim (Ubuntu/Debian) or sudo yum install vim (CentOS/RHEL)")
-        raise
         
         with open(temp_path, 'r') as f:
             edited_content = f.read()
@@ -443,5 +428,11 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
             if verbose:
                 print(f"Updated {file_path}")
     
+    except FileNotFoundError:
+        print("Error: vim is not installed. plz install vim (please!).")
+        print("On Windows: Download from https://www.vim.org/download.php")
+        print("On macOS: brew install vim")
+        print("On Linux: sudo apt install vim (Ubuntu/Debian) or sudo yum install vim (CentOS/RHEL)")
+        raise
     finally:
         os.unlink(temp_path)
