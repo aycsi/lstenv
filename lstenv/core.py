@@ -423,6 +423,10 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                 elif var in existing_vars:
                     updated_vars[var] = existing_vars[var]
             
+            for var, value in edited_vars.items():
+                if var in file_vars[file_path]:
+                    updated_vars[var] = value
+            
             write_env_file(file_path, updated_vars, preserve_comments=True)
             
             if verbose:
