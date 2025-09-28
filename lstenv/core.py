@@ -351,3 +351,68 @@ def scan_all_env_files(directory: Path = None, verbose: bool = False) -> List[Pa
         print(f"Found {len(env_files)} .env files")
     
     return sorted(env_files)
+
+
+def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) -> None:
+    if not env_files:
+        return
+    
+    all_vars = set()
+    file_vars = {}
+    
+    for file_path in env_files:
+        vars_in_file = set(parse_env_file(file_path).keys())
+        file_vars[file_path] = vars_in_file
+        all_vars.update(vars_in_file)
+    
+    if not all_vars:
+        print("No environment variables found in any .env files")
+        return
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as temp_file:
+        temp_path = temp_file.name
+        
+        temp_file.write("# Edit environment variables below\n")
+        temp_file.write("# Format: VARIABLE_NAME=value\n")
+        temp_file.write("# Lines starting with # are comments\n\n")
+        
+        for var in sorted(all_vars):
+            temp_file.write(f"{var}=\n")
+        
+        temp_file.write("\n# File locations:\n")
+        for file_path in env_files:
+            temp_file.write(f"# {file_path}\n")
+    
+    try:
+        subprocess.run(['vim', temp_path], check=True)
+        
+        with open(temp_path, 'r') as f:
+            edited_content = f.read()
+        
+        edited_vars = {}
+        for line in edited_content.split('\n'):
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                key = key.strip()
+                value = value.strip()
+                if key:
+                    edited_vars[key] = value
+        
+        for file_path in env_files:
+            existing_vars = parse_env_file(file_path)
+            updated_vars = {}
+            
+            for var in file_vars[file_path]:
+                if var in edited_vars:
+                    updated_vars[var] = edited_vars[var]
+                elif var in existing_vars:
+                    updated_vars[var] = existing_vars[var]
+            
+            write_env_file(file_path, updated_vars, preserve_comments=True)
+            
+            if verbose:
+                print(f"Updated {file_path}")
+    
+    finally:
+        os.unlink(temp_path)
