@@ -1,5 +1,7 @@
 import os
 import re
+import subprocess
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
@@ -328,3 +330,24 @@ def print_audit_report(present: Set[str], missing: Set[str], unused: Set[str], e
         print(f"  Use 'lstenv sync' to automatically sync")
     
     print()
+
+
+def scan_all_env_files(directory: Path = None, verbose: bool = False) -> List[Path]:
+    if directory is None:
+        directory = Path.cwd()
+    elif isinstance(directory, str):
+        directory = Path(directory)
+    
+    if not directory.exists():
+        raise ValueError(f"Directory does not exist: {directory}")
+    
+    env_files = []
+    for pattern in ['.env*', '*.env']:
+        env_files.extend(directory.rglob(pattern))
+    
+    env_files = [f for f in env_files if f.is_file() and not should_skip_file(f)]
+    
+    if verbose:
+        print(f"Found {len(env_files)} .env files")
+    
+    return sorted(env_files)
