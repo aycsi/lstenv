@@ -368,11 +368,17 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
     
     all_vars = set()
     file_vars = {}
+    var_files = {}
     
     for file_path in env_files:
         vars_in_file = set(parse_env_file(file_path).keys())
         file_vars[file_path] = vars_in_file
         all_vars.update(vars_in_file)
+        
+        for var in vars_in_file:
+            if var not in var_files:
+                var_files[var] = []
+            var_files[var].append(file_path.name)
     
     if not all_vars:
         print("No environment variables found in any .env files")
@@ -386,9 +392,10 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
         temp_file.write("# Lines starting with # are comments\n\n")
         
         for var in sorted(all_vars):
-            temp_file.write(f"{var}=\n")
+            files_list = ", ".join(var_files[var])
+            temp_file.write(f"{var}=  # Used in: {files_list}\n")
         
-        temp_file.write("\n# File locations:\n")
+        temp_file.write("\n# All .env files found:\n")
         for file_path in env_files:
             temp_file.write(f"# {file_path}\n")
     
@@ -423,6 +430,10 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                     updated_vars[var] = edited_vars[var]
                 elif var in existing_vars:
                     updated_vars[var] = existing_vars[var]
+            
+            for var, value in edited_vars.items():
+                if var in file_vars[file_path]:
+                    updated_vars[var] = value
             
             write_env_file(file_path, updated_vars, preserve_comments=True)
             
