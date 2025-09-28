@@ -99,17 +99,17 @@ Examples:
         help='Show detailed scanning information'
     )
     
-    ea_parser = subparsers.add_parser(
+    e_parser = subparsers.add_parser(
         'e',
         help='Edit all environment variables in all .env files using vim'
     )
-    ea_parser.add_argument(
+    e_parser.add_argument(
         '--directory', '-d',
         type=Path,
         default=Path.cwd(),
         help='Directory to scan (default: current directory)'
     )
-    ea_parser.add_argument(
+    e_parser.add_argument(
         '--verbose', '-v',
         action='store_true',
         help='Show detailed scanning information'
