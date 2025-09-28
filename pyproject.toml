@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lstenv"
-version = "0.0.10"
+version = "0.1.1"
 description = "A tool for editing environment variables"
 readme = "README.md"
 requires-python = ">=3.7"
