@@ -375,9 +375,9 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
         print("No environment variables found in any .env files")
         return
     
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as temp_file:
-        temp_path = temp_file.name
-        
+    temp_path = tempfile.mktemp(suffix='.txt')
+    
+    with open(temp_path, 'w') as temp_file:
         temp_file.write("# Edit environment variables below\n")
         temp_file.write("# Format: VARIABLE_NAME=value\n")
         temp_file.write("# Lines starting with # are comments\n\n")
@@ -396,10 +396,14 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                 temp_file.write(f"# {i}. {file_path}: {', '.join(file_vars_list)}\n")
     
     try:
+        print(f"Opening vim with temp file: {temp_path}")
         subprocess.run(['vim', temp_path], check=True)
         
+        print(f"Reading temp file: {temp_path}")
         with open(temp_path, 'r') as f:
             edited_content = f.read()
+        
+        print(f"Temp file content length: {len(edited_content)}")
         
         edited_vars = {}
         for line in edited_content.split('\n'):
@@ -413,6 +417,8 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                 if key:
                     edited_vars[key] = value
         
+        print(f"Parsed edited variables: {edited_vars}")
+        
         for file_path in env_files:
             existing_vars = parse_env_file(file_path)
             updated_vars = {}
@@ -423,14 +429,9 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                 elif var in existing_vars:
                     updated_vars[var] = existing_vars[var]
             
-            for var, value in edited_vars.items():
-                if var in file_vars[file_path]:
-                    updated_vars[var] = value
-            
             write_env_file(file_path, updated_vars, preserve_comments=True)
             
-            if verbose:
-                print(f"Updated {file_path}")
+            print(f"Updated {file_path} with variables: {updated_vars}")
     
     except FileNotFoundError:
         print("Error: vim is not installed. plz install vim (please!).")
