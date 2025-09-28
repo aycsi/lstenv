@@ -391,13 +391,18 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
         temp_file.write("# Format: VARIABLE_NAME=value\n")
         temp_file.write("# Lines starting with # are comments\n\n")
         
-        for var in sorted(all_vars):
-            files_list = ", ".join(var_files[var])
-            temp_file.write(f"{var}=  # Used in: {files_list}\n")
+        for i, var in enumerate(sorted(all_vars), 1):
+            temp_file.write(f"{var}=  # {i}\n")
         
-        temp_file.write("\n# All .env files found:\n")
-        for file_path in env_files:
-            temp_file.write(f"# {file_path}\n")
+        temp_file.write("\n# File references:\n")
+        for i, file_path in enumerate(env_files, 1):
+            temp_file.write(f"# {i}. {file_path}\n")
+        
+        temp_file.write("\n# Variables by file:\n")
+        for i, file_path in enumerate(env_files, 1):
+            file_vars_list = sorted(file_vars[file_path])
+            if file_vars_list:
+                temp_file.write(f"# {i}. {file_path}: {', '.join(file_vars_list)}\n")
     
     try:
         subprocess.run(['vim', temp_path], check=True)
@@ -415,6 +420,8 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
         for line in edited_content.split('\n'):
             line = line.strip()
             if line and not line.startswith('#') and '=' in line:
+                if '#' in line:
+                    line = line.split('#')[0].strip()
                 key, value = line.split('=', 1)
                 key = key.strip()
                 value = value.strip()
