@@ -411,8 +411,6 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                     updated_vars[var] = existing_vars[var]
             
             write_env_file(file_path, updated_vars, preserve_comments=True)
-            
-            print(f"Updated {file_path} with variables: {updated_vars}")
     
     except FileNotFoundError:
         print("Error: vim is not installed. plz install vim (please!).")
