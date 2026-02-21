@@ -268,11 +268,14 @@ def audit_env_files(directory: Path = None, example_file: str = ".env.example", 
     if directory is None:
         directory = Path.cwd()
     
+    example_path = directory / example_file
+    
     env_vars = set()
     for env_file in scan_all_env_files(directory):
-        env_vars.update(parse_env_file(env_file).keys())
+        if env_file != example_path:
+            env_vars.update(parse_env_file(env_file).keys())
     
-    example_vars = set(parse_env_file(directory / example_file).keys())
+    example_vars = set(parse_env_file(example_path).keys())
     code_vars = scan_code_files(directory)
     
     present = env_vars & example_vars
