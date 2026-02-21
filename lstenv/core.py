@@ -126,11 +126,6 @@ def scan_code_files(directory: Path = None, verbose: bool = False) -> Set[str]:
             try:
                 content = file_path.read_text(encoding='utf-8')
                 
-                if any(skip_pattern in content.lower() for skip_pattern in ['mock', 'test_', 'pytest', 'spec', 'test']):
-                    if verbose:
-                        print(f"  Skipped: {file_path.name} (test file)")
-                    continue
-                    
                 file_vars = set()
                 for pattern in patterns:
                     matches = re.findall(pattern, content)
