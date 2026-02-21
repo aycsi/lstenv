@@ -16,14 +16,6 @@ def main():
     parser = argparse.ArgumentParser(
         usage="lstenv <command> [options]",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  lstenv generate
-  lstenv generate --example-file .env.template
-  lstenv sync --example-file .env.template
-  lstenv sync --clean
-  lstenv audit --example-file .env.template
-        """
     )
     
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
