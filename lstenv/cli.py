@@ -129,7 +129,7 @@ Examples:
         elif args.command == 'audit':
             return handle_audit(args.directory, args.example_file, args.verbose)
         elif args.command == 'e':
-            return handle_edit(args.directory, args.verbose)
+            return handle_ea(args.directory, args.verbose)
     except KeyboardInterrupt:
         print("\nOperation cancelled by user")
         return 1
@@ -222,7 +222,7 @@ def handle_audit(directory: Path, example_file: str, verbose: bool = False) -> i
     return 0
 
 
-def handle_edit(directory: Path, verbose: bool = False) -> int:
+def handle_ea(directory: Path, verbose: bool = False) -> int:
     from .core import scan_all_env_files, edit_env_variables_with_vim
     
     print(f"Scanning all .env files in {directory}...")
