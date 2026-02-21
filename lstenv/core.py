@@ -383,14 +383,10 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                 temp_file.write(f"# {i}. {file_path}: {', '.join(file_vars_list)}\n")
     
     try:
-        print(f"Opening vim with temp file: {temp_path}")
         subprocess.run(['vim', temp_path], check=True)
         
-        print(f"Reading temp file: {temp_path}")
         with open(temp_path, 'r') as f:
             edited_content = f.read()
-        
-        print(f"Temp file content length: {len(edited_content)}")
         
         edited_vars = {}
         for line in edited_content.split('\n'):
@@ -403,8 +399,6 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                 value = value.strip()
                 if key:
                     edited_vars[key] = value
-        
-        print(f"Parsed edited variables: {edited_vars}")
         
         for file_path in env_files:
             existing_vars = parse_env_file(file_path)
