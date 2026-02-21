@@ -217,8 +217,11 @@ def write_env_file(file_path: Path, env_vars: Dict[str, str], preserve_comments:
 
 def generate_example_env(directory: Path = None, verbose: bool = False) -> Dict[str, str]:
     env_vars = scan_code_files(directory, verbose=verbose)
-    example_vars = {}
     
+    for env_file in scan_all_env_files(directory):
+        env_vars.update(parse_env_file(env_file).keys())
+    
+    example_vars = {}
     for var in sorted(env_vars):
         example_vars[var] = ""
     
