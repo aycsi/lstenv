@@ -155,7 +155,6 @@ def handle_generate(directory: Path, example_file: str, verbose: bool = False) -
     env_vars = generate_example_env(directory, verbose=verbose)
     
     if not env_vars:
-        print(f"{get_colored_output('No environment variables found', '36')}")
         print("No environment variables found")
         return 0
     
