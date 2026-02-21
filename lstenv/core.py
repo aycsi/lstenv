@@ -252,7 +252,8 @@ def sync_env_files(directory: Path = None, clean: bool = False, example_file: st
     example_vars = parse_env_file(example_path)
     env_vars = {}
     for env_file in scan_all_env_files(directory):
-        env_vars.update(parse_env_file(env_file))
+        if env_file != example_path:
+            env_vars.update(parse_env_file(env_file))
     
     if clean:
         env_vars = {k: v for k, v in env_vars.items() if k in example_vars}
