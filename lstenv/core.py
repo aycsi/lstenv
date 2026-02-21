@@ -75,25 +75,12 @@ def detect_language(file_path: Path) -> str:
     return 'unknown'
 
 def should_skip_file(file_path: Path) -> bool:
-    path_str = str(file_path)
-    skip_patterns = [
-        'lstenv/core.py',
-        'lstenv/cli.py', 
-        'lstenv/__init__.py',
-        '.venv',
-        'venv',
-        '__pycache__',
-        '.git',
-        'node_modules',
-        '.next',
-        'target',
-        'build',
-        'dist',
-        '.gradle',
-        'bin',
-        'obj'
-    ]
-    return any(pattern in path_str for pattern in skip_patterns)
+    skip_dirs = {
+        '.venv', 'venv', '__pycache__', '.git', 'node_modules',
+        '.next', 'target', 'build', 'dist', '.gradle', 'bin', 'obj',
+    }
+    parts = set(file_path.parts)
+    return bool(parts & skip_dirs)
 
 def scan_code_files(directory: Path = None, verbose: bool = False) -> Set[str]:
     if directory is None:
