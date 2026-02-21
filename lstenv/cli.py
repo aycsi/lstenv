@@ -208,11 +208,10 @@ def handle_sync(directory: Path, clean: bool, example_file: str, verbose: bool =
 
 
 def handle_audit(directory: Path, example_file: str, verbose: bool = False) -> int:
-    env_path = directory / ".env"
-    example_path = directory / example_file
+    from .core import scan_all_env_files
     
-    if not env_path.exists() and not example_path.exists():
-        print(f"{get_colored_output('No .env files found', '36')}")
+    if not scan_all_env_files(directory):
+        print("No .env files found")
         return 0
     
     print(f"Auditing environment files in {directory}...")
