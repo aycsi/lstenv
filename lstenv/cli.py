@@ -14,16 +14,8 @@ from .core import (
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate, sync, and audit .env files by scanning code",
+        usage="lstenv <command> [options]",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  lstenv generate
-  lstenv generate --example-file .env.template
-  lstenv sync --example-file .env.template
-  lstenv sync --clean
-  lstenv audit --example-file .env.template
-        """
     )
     
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
@@ -155,7 +147,6 @@ def handle_generate(directory: Path, example_file: str, verbose: bool = False) -
     env_vars = generate_example_env(directory, verbose=verbose)
     
     if not env_vars:
-        print(f"{get_colored_output('No environment variables found', '36')}")
         print("No environment variables found")
         return 0
     
@@ -209,11 +200,10 @@ def handle_sync(directory: Path, clean: bool, example_file: str, verbose: bool =
 
 
 def handle_audit(directory: Path, example_file: str, verbose: bool = False) -> int:
-    env_path = directory / ".env"
-    example_path = directory / example_file
+    from .core import scan_all_env_files
     
-    if not env_path.exists() and not example_path.exists():
-        print(f"{get_colored_output('No .env files found', '36')}")
+    if not scan_all_env_files(directory):
+        print("No .env files found")
         return 0
     
     print(f"Auditing environment files in {directory}...")

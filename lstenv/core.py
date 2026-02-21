@@ -75,25 +75,12 @@ def detect_language(file_path: Path) -> str:
     return 'unknown'
 
 def should_skip_file(file_path: Path) -> bool:
-    path_str = str(file_path)
-    skip_patterns = [
-        'lstenv/core.py',
-        'lstenv/cli.py', 
-        'lstenv/__init__.py',
-        '.venv',
-        'venv',
-        '__pycache__',
-        '.git',
-        'node_modules',
-        '.next',
-        'target',
-        'build',
-        'dist',
-        '.gradle',
-        'bin',
-        'obj'
-    ]
-    return any(pattern in path_str for pattern in skip_patterns)
+    skip_dirs = {
+        '.venv', 'venv', '__pycache__', '.git', 'node_modules',
+        '.next', 'target', 'build', 'dist', '.gradle', 'bin', 'obj',
+    }
+    parts = set(file_path.parts)
+    return bool(parts & skip_dirs)
 
 def scan_code_files(directory: Path = None, verbose: bool = False) -> Set[str]:
     if directory is None:
@@ -139,11 +126,6 @@ def scan_code_files(directory: Path = None, verbose: bool = False) -> Set[str]:
             try:
                 content = file_path.read_text(encoding='utf-8')
                 
-                if any(skip_pattern in content.lower() for skip_pattern in ['mock', 'test_', 'pytest', 'spec', 'test']):
-                    if verbose:
-                        print(f"  Skipped: {file_path.name} (test file)")
-                    continue
-                    
                 file_vars = set()
                 for pattern in patterns:
                     matches = re.findall(pattern, content)
@@ -235,8 +217,11 @@ def write_env_file(file_path: Path, env_vars: Dict[str, str], preserve_comments:
 
 def generate_example_env(directory: Path = None, verbose: bool = False) -> Dict[str, str]:
     env_vars = scan_code_files(directory, verbose=verbose)
-    example_vars = {}
     
+    for env_file in scan_all_env_files(directory):
+        env_vars.update(parse_env_file(env_file).keys())
+    
+    example_vars = {}
     for var in sorted(env_vars):
         example_vars[var] = ""
     
@@ -247,11 +232,13 @@ def sync_env_files(directory: Path = None, clean: bool = False, example_file: st
     if directory is None:
         directory = Path.cwd()
     
-    env_path = directory / ".env"
     example_path = directory / example_file
     
     example_vars = parse_env_file(example_path)
-    env_vars = parse_env_file(env_path)
+    env_vars = {}
+    for env_file in scan_all_env_files(directory):
+        if env_file != example_path:
+            env_vars.update(parse_env_file(env_file))
     
     if clean:
         env_vars = {k: v for k, v in env_vars.items() if k in example_vars}
@@ -267,10 +254,13 @@ def audit_env_files(directory: Path = None, example_file: str = ".env.example", 
     if directory is None:
         directory = Path.cwd()
     
-    env_path = directory / ".env"
     example_path = directory / example_file
     
-    env_vars = set(parse_env_file(env_path).keys())
+    env_vars = set()
+    for env_file in scan_all_env_files(directory):
+        if env_file != example_path:
+            env_vars.update(parse_env_file(env_file).keys())
+    
     example_vars = set(parse_env_file(example_path).keys())
     code_vars = scan_code_files(directory)
     
@@ -341,9 +331,9 @@ def scan_all_env_files(directory: Path = None, verbose: bool = False) -> List[Pa
     if not directory.exists():
         raise ValueError(f"Directory does not exist: {directory}")
     
-    env_files = []
+    env_files = set()
     for pattern in ['.env*', '*.env']:
-        env_files.extend(directory.rglob(pattern))
+        env_files.update(directory.rglob(pattern))
     
     env_files = [f for f in env_files if f.is_file() and not should_skip_file(f)]
     
@@ -396,14 +386,10 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                 temp_file.write(f"# {i}. {file_path}: {', '.join(file_vars_list)}\n")
     
     try:
-        print(f"Opening vim with temp file: {temp_path}")
         subprocess.run(['vim', temp_path], check=True)
         
-        print(f"Reading temp file: {temp_path}")
         with open(temp_path, 'r') as f:
             edited_content = f.read()
-        
-        print(f"Temp file content length: {len(edited_content)}")
         
         edited_vars = {}
         for line in edited_content.split('\n'):
@@ -417,8 +403,6 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                 if key:
                     edited_vars[key] = value
         
-        print(f"Parsed edited variables: {edited_vars}")
-        
         for file_path in env_files:
             existing_vars = parse_env_file(file_path)
             updated_vars = {}
@@ -430,8 +414,6 @@ def edit_env_variables_with_vim(env_files: List[Path], verbose: bool = False) ->
                     updated_vars[var] = existing_vars[var]
             
             write_env_file(file_path, updated_vars, preserve_comments=True)
-            
-            print(f"Updated {file_path} with variables: {updated_vars}")
     
     except FileNotFoundError:
         print("Error: vim is not installed. plz install vim (please!).")
