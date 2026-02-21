@@ -346,9 +346,9 @@ def scan_all_env_files(directory: Path = None, verbose: bool = False) -> List[Pa
     if not directory.exists():
         raise ValueError(f"Directory does not exist: {directory}")
     
-    env_files = []
+    env_files = set()
     for pattern in ['.env*', '*.env']:
-        env_files.extend(directory.rglob(pattern))
+        env_files.update(directory.rglob(pattern))
     
     env_files = [f for f in env_files if f.is_file() and not should_skip_file(f)]
     
