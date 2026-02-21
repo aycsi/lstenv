@@ -14,7 +14,7 @@ from .core import (
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate, sync, and audit .env files by scanning code",
+        usage="lstenv <command> [options]",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
